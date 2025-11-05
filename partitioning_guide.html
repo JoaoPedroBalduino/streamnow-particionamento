@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamNow - Guia Visual de Particionamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .section h2 {
+            color: #2a5298;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .table-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .table-card h3 {
+            color: #1e3c72;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .badge-range {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-list {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .justification {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            margin: 20px 0;
+        }
+        
+        .justification h4 {
+            color: #2a5298;
+            margin-bottom: 10px;
+        }
+        
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .benefit-item {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+        
+        .benefit-item::before {
+            content: "✓";
+            background: #2196F3;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+        
+        .partition-diagram {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .partition-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .partition-box {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .partition-2024 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .partition-2025 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .partition-q4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .partition-q1 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .arrow {
+            font-size: 1.5em;
+            color: #667eea;
+        }
+        
+        .query-example {
+            background: #263238;
+            color: #aed581;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 StreamNow</h1>
+            <p>Particionamento de Dados PostgreSQL</p>
+        </header>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📊 Estratégias de Particionamento</h2>
+                
+                <div class="table-card">
+                    <h3>
+                        👥 Tabela: usuarios
+                        <span class="badge badge-range">RANGE</span>
+                    </h3>
+                    
+                    <div class="justification">
+                        <h4>🎯 Coluna de Particionamento: <code>data_cadastro</code></h4>
+                        <p><strong>Por que RANGE?</strong> Os dados crescem cronologicamente e as consultas mais frequentes filtram por períodos de tempo.</p>
+                    </div>
+                    
+                    <div class="benefits">
+                        <div class="benefit-item">
+                            Consultas temporais otimizadas
+                        </div>
+                        <div class="benefit-item">
+                            Análise de crescimento por período
+                        </div>
+                        <div class="benefit-item">
+                            Facilita arquivamento de dados antigos
+                        </div>
+                        <div class="benefit-item">
+                            Manutenção granular por período
+                        </div>
+                        <div class="benefit-item">
+                            Backup incremental eficiente
+                        </div>
+                        <div class="benefit-item">
+                            Marketing analisa tendências temporais
+                        </div>
+                    </div>
+                    
+                    <div class="partition-diagram">
+                        <h4 style="color: #2a5298; margin-bottom: 15px;">Estrutura das Partições:</h4>
+                        <div class="partition-row">
+                            <div class="partition-box partition-2024">
+                                usuarios_2024<br>
+                                <small>2024-01-01 até 2025-01-01</small>
+                            </div>
+                            <span class="arrow">→</span>
+                            <div class="partition-box partition-2025">
+                                usuarios_2025<br>
+                                <small>2025-01-01 até 2026-01-01</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="query-example">
+-- Query otimizada - usa apenas usuarios_2025<br>
+SELECT COUNT(*) FROM usuarios<br>
+WHERE data_cadastro >= '2025-01-01';<br>
+<br>
+-- Partition Pruning: PostgreSQL ignora usuarios_2024 automaticamente!
+                    </div>
+                </div>
+                
+                <div class="table-card">
+                    <h3>
+                        📺 Tabela: reproducoes
+                        <span class="badge badge-range">RANGE</span>
+                    </h3>
+                    
+                    <div class="justification">
+                        <h4>🎯 Coluna de Particionamento: <code>data_reproducao</code></h4>
+                        <p><strong>Por que RANGE?</strong> Volume massivo de dados com crescimento diário e consultas focadas em períodos específicos.</p>
+                    </div>
+                    
+                    <div class="benefits">
+                        <div class="benefit-item">
+                            Milhões de inserções diárias otimizadas
+                        </div>
+                        <div class="benefit-item">
+                            Queries BI filtram por período
+                        </div>
+                        <div class="benefit-item">
+                            Fácil descarte de dados antigos
+                        </div>
+                        <div class="benefit-item">
+                            Análises temporais ultra-rápidas
+                        </div>
+                        <div class="benefit-item">
+                            Políticas de retenção simplificadas
+                        </div>
+                        <div class="benefit-item">
+                            Compressão de partições antigas
+                        </div>
+                    </div>
+                    
+                    <div class="partition-diagram">
+                        <h4 style="color: #2a5298; margin-bottom: 15px;">Estrutura das Partições:</h4>
+                        <div class="partition-row">
+                            <div class="partition-box partition-q4">
+                                reproducoes_2024_q4<br>
+                                <small>Out-Dez 2024</small>
+                            </div>
+                            <span class="arrow">→</span>
+                            <div class="partition-box partition-q1">
+                                reproducoes_2025_q1<br>
+                                <small>Jan-Mar 2025</small>
+                            </div>
+                        </div>
+                        <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                            💡 <strong>Estratégia:</strong> Partições trimestrais balanceiam performance e gerenciamento
+                        </p>
+                    </div>
+                    
+                    <div class="query-example">
+-- Análise de Q4 2024 - usa apenas reproducoes_2024_q4<br>
+SELECT categoria, SUM(duracao_segundos)/3600 as horas<br>
+FROM reproducoes<br>
+WHERE data_reproducao BETWEEN '2024-10-01' AND '2024-12-31'<br>
+GROUP BY categoria;<br>
+<br>
+-- Ganho: 10x mais rápido que sem particionamento!
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>⚡ Benefícios de Performance</h2>
+                <div class="performance-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Melhoria em Queries</div>
+                        <div class="metric-value">10x</div>
+                        <div class="metric-label">mais rápido</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Redução VACUUM</div>
+                        <div class="metric-value">80%</div>
+                        <div class="metric-label">tempo economizado</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Índices</div>
+                        <div class="metric-value">5x</div>
+                        <div class="metric-label">menores</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Contenção</div>
+                        <div class="metric-value">-70%</div>
+                        <div class="metric-label">locks reduzidos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🔧 Vantagens Operacionais</h2>
+                <div class="benefits">
+                    <div class="benefit-item">
+                        <strong>Arquivamento Simples:</strong> DETACH PARTITION para dados antigos
+                    </div>
+                    <div class="benefit-item">
+                        <strong>Backup Granular:</strong> Backup apenas de partições críticas
+                    </div>
+                    <div class="benefit-item">
+                        <strong>Manutenção Rápida:</strong> VACUUM/ANALYZE em partições menores
+                    </div>
+                    <div class="benefit-item">
+                        <strong>Crescimento Linear:</strong> Performance constante com volume
+                    </div>
+                    <div class="benefit-item">
+                        <strong>Tablespaces:</strong> Dados antigos em storage mais barato
+                    </div>
+                    <div class="benefit-item">
+                        <strong>Retenção Automatizada:</strong> Scripts para limpar partições antigas
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
